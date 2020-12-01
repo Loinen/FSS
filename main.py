@@ -27,7 +27,7 @@ from NiaPy.benchmarks import Ackley
 # min_w (Optional[float]) – Minimum weight of a fish.
 # w_scale (Optional[float]) – Maximum weight of a fish.
 
-def start(benc, nruns):
+def start(benc, nruns, dim):
     benc.plot3d()
     fssTime = list()
     frfTime = list()
@@ -35,10 +35,9 @@ def start(benc, nruns):
 
     stats = np.zeros(nruns)
     print("\nstarting FSS ", benc)
-
     for i in range(nruns):
-        task = StoppingTask(D=2, nGEN=100, nFES=1000, optType=OptimizationType.MINIMIZATION, benchmark=benc)
-        algo = FishSchoolSearch(NP=40, SI_init=0.3, SI_final=1, SV_init=0.3, SV_final=1, min_w=0.2, w_scale=0.8)
+        task = StoppingTask(D=dim, nGEN=100, nFES=1000, optType=OptimizationType.MINIMIZATION, benchmark=benc)
+        algo = FishSchoolSearch(NP=40, SI_init=0.3, SI_final=5, SV_init=0.3, SV_final=5, min_w=0.2, w_scale=0.8)
         timer = time.perf_counter()
         best = algo.run(task)
         fssTime.append(time.perf_counter() - timer)
@@ -57,12 +56,13 @@ def start(benc, nruns):
     stats = np.zeros(nruns)
     print("\nstarting FireflyAlgorithm", benc)
     for i in range(nruns):
-        task = StoppingTask(D=2, nGEN=100, nFES=1000, optType=OptimizationType.MINIMIZATION, benchmark=benc)
+        task = StoppingTask(D=dim, nGEN=100, nFES=1000, optType=OptimizationType.MINIMIZATION, benchmark=benc)
         algo = FireflyAlgorithm(NP=40)
         # alpha=1, betamin=1, gamma=2 - параметры светлячков, хз что значит
         timer = time.perf_counter()
         best = algo.run(task)  # возвращает наилучший найденный минимум
         frfTime.append(time.perf_counter() - timer)
+        # task.plot()
         stats[i] = best[1]  # save best
         evals, x_f = task.return_conv()
 
@@ -74,13 +74,14 @@ def start(benc, nruns):
     stats = np.zeros(nruns)
     print("\nstarting ParticleSwarm", benc)
     for i in range(nruns):
-        task = StoppingTask(D=2, nGEN=100, nFES=1000, optType=OptimizationType.MINIMIZATION, benchmark=benc)
+        task = StoppingTask(D=dim, nGEN=100, nFES=1000, optType=OptimizationType.MINIMIZATION, benchmark=benc)
         algo = ParticleSwarmAlgorithm(NP=40)
         # C1=2.0, C2=2.0, w=0.7, vMin=-1.5, vMax=1.5, c - когнитивный и социальный компонент
         # w - инерционный вес, v - минимальная и максимальная скорость
         timer = time.perf_counter()
         best = algo.run(task)  # возвращает наилучший найденный минимум
         psTime.append(time.perf_counter() - timer)
+        # task.plot()
         stats[i] = best[1]  # save best
         evals, x_f = task.return_conv()
 
@@ -96,14 +97,13 @@ if __name__ == '__main__':
     # fss = nia.algorithms.basic.FishSchoolSearch(Name=['FSS', 'FishSchoolSearch'], school=100)
     # fss.gen_weight()
     # fss.setParameters(NP=100, SI_init=0.3, SI_final=1, SV_init=0.3, SV_final=1, min_w=0.3, w_scale=0.7)
-    # gw = nia.algorithms.basic.GreyWolfOptimizer(Name=['GreyWolfOptimizer', 'GWO'], pop=10, task=rosen)
     # print(fss.getBest(X=x, X_f=x1), fss.bad_run())
 
-    nruns = 5
-    benc = Rosenbrock()
-    start(benc, nruns)
-    benc = Rastrigin()
-    start(benc, nruns)
-    benc = Ackley()
-    start(benc, nruns)
+    nruns = 10
+    benc = Rosenbrock() # минимум 0
+    start(benc, nruns, 2)
+    benc = Rastrigin() # минимум 0, трудная задача, т.к. много локальных минимумов
+    start(benc, nruns, 2)
+    benc = Ackley() # минимум 0, еще больше локальных минимумов
+    start(benc, nruns, 10)
 
