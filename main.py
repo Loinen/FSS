@@ -45,10 +45,11 @@ def start(benc, nruns):
     print(algo.getParameters())
 
     stats = np.zeros(nruns)
-    print("starting FireflyAlgorithm")
+    print("\nstarting FireflyAlgorithm", benc)
     for i in range(nruns):
         task = StoppingTask(D=2, nGEN=100, nFES=1000, optType=OptimizationType.MINIMIZATION, benchmark=benc)
         algo = FireflyAlgorithm(NP=40)
+        # alpha=1, betamin=1, gamma=2 - параметры светлячков, хз что значит
         best = algo.run(task) # возвращает наилучший найденный минимум
         stats[i] = best[1]  # save best
         evals, x_f = task.return_conv()
@@ -57,10 +58,12 @@ def start(benc, nruns):
     print(algo.getParameters())
 
     stats = np.zeros(nruns)
-    print("starting ParticleSwarm")
+    print("\nstarting ParticleSwarm", benc)
     for i in range(nruns):
         task = StoppingTask(D=2, nGEN=100, nFES=1000, optType=OptimizationType.MINIMIZATION, benchmark=benc)
         algo = ParticleSwarmAlgorithm(NP=40)
+        # C1=2.0, C2=2.0, w=0.7, vMin=-1.5, vMax=1.5, c - когнитивный и социальный компонент
+        # w - инерционный вес, v - минимальная и максимальная скорость
         best = algo.run(task)  # возвращает наилучший найденный минимум
         stats[i] = best[1]  # save best
         evals, x_f = task.return_conv()
