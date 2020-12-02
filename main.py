@@ -1,8 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import pandas as pd
 
-import NiaPy as nia
+from NiaPy import Runner
 from NiaPy.algorithms import BasicStatistics
 from NiaPy.algorithms.basic import FishSchoolSearch
 from NiaPy.algorithms.basic import FireflyAlgorithm
@@ -13,8 +14,8 @@ from NiaPy.benchmarks import Rosenbrock
 from NiaPy.benchmarks import Ackley
 
 
-# we will run Grey Wolf Optimizer for 5 independent runs (Rosenbrock)
-# np - размер популяции, d - размер задачи, nfes - Number of function evaluations
+# np - размер популяции,
+# параметры и критерии остановки: d - размер задачи, nfes - Number of function evaluations
 # ngen - Number of generations or iterations
 # refValue (Optional[float]): Reference value of function/fitness function.
 # logger (Optional[bool]): Enable/disable logging of improvements.
@@ -92,12 +93,26 @@ def start(benc, nruns, dim):
 
 
 if __name__ == '__main__':
-    # x = np.random.normal(size=1000)
-    # x1 = np.random.normal(size=1000)
-    # fss = nia.algorithms.basic.FishSchoolSearch(Name=['FSS', 'FishSchoolSearch'], school=100)
-    # fss.gen_weight()
-    # fss.setParameters(NP=100, SI_init=0.3, SI_final=1, SV_init=0.3, SV_final=1, min_w=0.3, w_scale=0.7)
-    # print(fss.getBest(X=x, X_f=x1), fss.bad_run())
+    runner = Runner(
+        D=40,
+        nFES=100,
+        nRuns=2,
+        useAlgorithms=[
+            ParticleSwarmAlgorithm(),
+            FishSchoolSearch(),
+            FireflyAlgorithm()],
+        useBenchmarks=[
+            Ackley(),
+            Rastrigin(),
+            Rosenbrock()
+        ]
+    )
+
+    runner.run(export='dataframe', verbose=True) # Returns dictionary of results
+    unpickled_df = pd.read_pickle("./export/2020-12-02 13.57.04.047304.pkl")
+    pd.set_option('display.max_colwidth', -1)
+    print(unpickled_df)
+
 
     nruns = 10
     benc = Rosenbrock() # минимум 0
