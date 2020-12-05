@@ -55,16 +55,17 @@ def sgd(
 
 if __name__ == "__main__":
     nruns = 10
-    dim = 3
+    dim = 5
 
     Time = list()
     stats = np.zeros(nruns)
+    print("Fish School Search")
     for i in range(nruns):
-        task = StoppingTask(D=dim, nGEN=100, optType=OptimizationType.MINIMIZATION,
+        task = StoppingTask(D=dim, nGEN=500, optType=OptimizationType.MINIMIZATION,
                             benchmark=noisy_rosenbrock())
 
-        algo = FishSchoolSearch(NP=40, SI_init=0.3, SI_final=5, SV_init=0.3,
-                                SV_final=5, min_w=0.2, w_scale=0.8)
+        algo = FishSchoolSearch(NP=30, SI_init=0.5, SI_final=3, SV_init=0.3,
+                                SV_final=7, min_w=0.1, w_scale=0.7)
 
         timer = time.perf_counter()
         best = algo.run(task)
@@ -74,13 +75,13 @@ if __name__ == "__main__":
 
         evals, x_f = task.return_conv()
 
-    print("Fish School Search")
     stat = BasicStatistics(stats)
     print(stat.generate_standard_report())
     print("Execution time ", np.mean(Time))
 
     Time = list()
     stats = np.zeros(nruns)
+    print("\nStochastic Gradient Descent")
     for i in range(nruns):
         x0 = np.random.uniform(size=dim)
         timer = time.perf_counter()
@@ -89,7 +90,6 @@ if __name__ == "__main__":
 
         stats[i] = res_sgd.fun
 
-    print("\nStochastic Gradient Descent")
     stat = BasicStatistics(stats)
     print(stat.generate_standard_report())
     print("Execution time ", np.mean(Time))
