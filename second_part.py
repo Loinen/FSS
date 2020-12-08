@@ -11,19 +11,14 @@ from scipy.optimize import rosen_der, minimize
 
 class noisy_rosenbrock(Benchmark):
     def __init__(self):
-        Benchmark.__init__(self, -30, 30)
+        Benchmark.__init__(self, -3.0, 3.0)
 
     def function(self):
         def evaluate(D, sol):
-            val = sum(100.0*(sol[1:] - sol[:-1]**2.0)**2.0 + (1 - sol[:-1])**2.0)
-            val += np.random.uniform()
+            val = sum(100.0*np.power(sol[1:] - np.power(sol[:-1], 2.0), 2.0) + (1 - np.power(sol[:-1], 2.0)))
+            val += 10 ** 3 * np.random.uniform()
             return val
         return evaluate
-
-def noisy_rosenbrock_func(sol):
-    val = sum(100.0 * (sol[1:] - sol[:-1] ** 2.0) ** 2.0 + (1 - sol[:-1]) ** 2.0)
-    val += np.random.uniform()
-    return val
 
 
 def sgd(
@@ -51,18 +46,24 @@ def sgd(
         x = x + learning_rate * velocity
 
     i += 1
-    return OptimizeResult(x=x, fun=fun(x), jac=g, nit=i, nfev=i, success=True)
+    return OptimizeResult(x=x, fun=fun(benc)(len(x), x), jac=g, nit=i, nfev=i, success=True)
 
 
 if __name__ == "__main__":
     nruns = 10
     dim = 2
 
+    benc = noisy_rosenbrock()
+    benc.plot3d()
+
+
     Time = list()
+    x_fss = list()
+    y_fss = list()
     stats = np.zeros(nruns)
     print("Fish School Search")
     for i in range(nruns):
-        task = StoppingTask(D=dim, nGEN=500, optType=OptimizationType.MINIMIZATION,
+        task = StoppingTask(D=dim, nGEN=50, optType=OptimizationType.MINIMIZATION,
                             benchmark=noisy_rosenbrock())
 
         algo = FishSchoolSearch(NP=30, SI_init=0.5, SI_final=3, SV_init=0.3,
@@ -73,35 +74,41 @@ if __name__ == "__main__":
         Time.append(time.perf_counter() - timer)
 
         stats[i] = best[1]
-
-        evals, x_f = task.return_conv()
+        x_fss.append(best[0][0])
+        y_fss.append(best[0][1])
 
     stat = BasicStatistics(stats)
     print(stat.generate_standard_report())
     print("Execution time ", np.mean(Time))
 
     Time = list()
+    x_sgd = list()
+    y_sgd = list()
     stats = np.zeros(nruns)
     print("\nStochastic Gradient Descent")
     for i in range(nruns):
         x0 = np.random.uniform(size=dim)
         timer = time.perf_counter()
-        res_sgd = minimize(noisy_rosenbrock_func, x0, method=sgd, jac=rosen_der)
+        res_sgd = minimize(noisy_rosenbrock.function, x0, method=sgd, jac=rosen_der)
         Time.append(time.perf_counter() - timer)
 
         stats[i] = res_sgd.fun
+        x_sgd.append(res_sgd.x[0])
+        y_sgd.append(res_sgd.x[1])
 
     stat = BasicStatistics(stats)
     print(stat.generate_standard_report())
     print("Execution time ", np.mean(Time))
 
     Time = list()
+    x_spo = list()
+    y_spo = list()
     stats = np.zeros(nruns)
     print("\nParticleSwarmAlgorithm")
     from NiaPy.algorithms.basic import ParticleSwarmAlgorithm
 
     for i in range(nruns):
-        task = StoppingTask(D=dim, nGEN=500, optType=OptimizationType.MINIMIZATION,
+        task = StoppingTask(D=dim, nGEN=50, optType=OptimizationType.MINIMIZATION,
                             benchmark=noisy_rosenbrock())
 
         algo = ParticleSwarmAlgorithm(NP=30, C1=2.0, C2=2.0, w=0.8, vMin=-1, vMax=1)
@@ -111,9 +118,21 @@ if __name__ == "__main__":
         Time.append(time.perf_counter() - timer)
 
         stats[i] = best[1]
-
-        evals, x_f = task.return_conv()
+        x_spo.append(best[0][0])
+        y_spo.append(best[0][1])
 
     stat = BasicStatistics(stats)
     print(stat.generate_standard_report())
     print("Execution time ", np.mean(Time))
+
+    x = np.linspace(min(x_spo + x_fss + x_sgd) - 0.3, max(x_spo + x_fss + x_sgd) + 0.3)
+    y = np.linspace(min(y_spo + y_fss + y_sgd) - 0.3, max(y_spo + y_fss + y_sgd) + 0.3)
+    x, y = np.meshgrid(x, y)
+    plt.contourf(x, y, noisy_rosenbrock.function(benc)(dim, (x, y)))
+
+    plt.scatter(x_spo, y_spo, label="SPO")
+    plt.scatter(x_fss, y_fss, label="FSS")
+    plt.scatter(x_sgd, y_sgd, label="SGD")
+
+    plt.legend()
+    plt.show()
