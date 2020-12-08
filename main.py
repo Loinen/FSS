@@ -58,8 +58,7 @@ def start(benc, nruns, dim):
     print("\nstarting FireflyAlgorithm", benc)
     for i in range(nruns):
         task = StoppingTask(D=dim, nGEN=100, nFES=1000, optType=OptimizationType.MINIMIZATION, benchmark=benc)
-        algo = FireflyAlgorithm(NP=40)
-        # alpha=1, betamin=1, gamma=2 - параметры светлячков, хз что значит
+        algo = FireflyAlgorithm(NP=40, alpha=0.2, betamin=0.2, gamma=0.5)
         timer = time.perf_counter()
         best = algo.run(task)  # возвращает наилучший найденный минимум
         frfTime.append(time.perf_counter() - timer)
@@ -76,7 +75,7 @@ def start(benc, nruns, dim):
     print("\nstarting ParticleSwarm", benc)
     for i in range(nruns):
         task = StoppingTask(D=dim, nGEN=100, nFES=1000, optType=OptimizationType.MINIMIZATION, benchmark=benc)
-        algo = ParticleSwarmAlgorithm(NP=40)
+        algo = ParticleSwarmAlgorithm(NP=40, C1=2.0, C2=2.0, w=0.8, vMin=-1, vMax=1.5)
         # C1=2.0, C2=2.0, w=0.7, vMin=-1.5, vMax=1.5, c - когнитивный и социальный компонент
         # w - инерционный вес, v - минимальная и максимальная скорость
         timer = time.perf_counter()
@@ -108,11 +107,10 @@ if __name__ == '__main__':
         ]
     )
 
-    runner.run(export='dataframe', verbose=True) # Returns dictionary of results
-    unpickled_df = pd.read_pickle("./export/2020-12-02 13.57.04.047304.pkl")
-    pd.set_option('display.max_colwidth', -1)
-    print(unpickled_df)
-
+    # runner.run(export='dataframe', verbose=True) # Returns dictionary of results
+    # unpickled_df = pd.read_pickle("./export/2020-12-02 13.57.04.047304.pkl")
+    # pd.set_option('display.max_colwidth', -1)
+    # print(unpickled_df)
 
     nruns = 10
     benc = Rosenbrock() # минимум 0

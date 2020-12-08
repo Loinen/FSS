@@ -53,9 +53,10 @@ def sgd(
     i += 1
     return OptimizeResult(x=x, fun=fun(x), jac=g, nit=i, nfev=i, success=True)
 
+
 if __name__ == "__main__":
     nruns = 10
-    dim = 5
+    dim = 2
 
     Time = list()
     stats = np.zeros(nruns)
@@ -89,6 +90,29 @@ if __name__ == "__main__":
         Time.append(time.perf_counter() - timer)
 
         stats[i] = res_sgd.fun
+
+    stat = BasicStatistics(stats)
+    print(stat.generate_standard_report())
+    print("Execution time ", np.mean(Time))
+
+    Time = list()
+    stats = np.zeros(nruns)
+    print("\nParticleSwarmAlgorithm")
+    from NiaPy.algorithms.basic import ParticleSwarmAlgorithm
+
+    for i in range(nruns):
+        task = StoppingTask(D=dim, nGEN=500, optType=OptimizationType.MINIMIZATION,
+                            benchmark=noisy_rosenbrock())
+
+        algo = ParticleSwarmAlgorithm(NP=30, C1=2.0, C2=2.0, w=0.8, vMin=-1, vMax=1)
+
+        timer = time.perf_counter()
+        best = algo.run(task)
+        Time.append(time.perf_counter() - timer)
+
+        stats[i] = best[1]
+
+        evals, x_f = task.return_conv()
 
     stat = BasicStatistics(stats)
     print(stat.generate_standard_report())
