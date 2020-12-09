@@ -41,7 +41,10 @@ def sgd(
         if callback and callback(x):
             break
 
-        g = np.gradient((fun(benc)(len(x), x), fun(benc)(len(x), x+0.01)), 0.01)
+        if jac == None:
+            g = np.gradient((fun(benc)(len(x), x), fun(benc)(len(x), x+0.01)), 0.01)
+        else:
+            g = jac(x)
 
         velocity = mass * velocity - (1.0 - mass) * g
         x1 = x + learning_rate * velocity
