@@ -28,7 +28,7 @@ def sgd(
     learning_rate=0.0024,
     mass=0.9,
     startiter=0,
-    maxiter=500,
+    maxiter=1000,
     callback=None,
     **kwargs
 ):
@@ -53,15 +53,15 @@ def sgd(
 
 
 if __name__ == "__main__":
-    nruns = 10
+    nruns = 30
     dim = 2
-
     x = np.linspace(-3, 3, 20)
     x, y = np.meshgrid(x, x)
     noise = np.random.uniform(size=(np.shape(x)))
     u = rosen((x, y)) + noise
     rbf = Rbf(x, y, u)
-
+    iter = 1000
+    fes = 1000
     benc = noisy_rosenbrock()
     benc.plot3d()
 
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     stats = np.zeros(nruns)
     print("Fish School Search")
     for i in range(nruns):
-        task = StoppingTask(D=dim, nGEN=50, optType=OptimizationType.MINIMIZATION,
+        task = StoppingTask(D=dim, nGEN=iter, nFES=fes,  optType=OptimizationType.MINIMIZATION,
                             benchmark=noisy_rosenbrock())
 
         algo = FishSchoolSearch(NP=30, SI_init=0.5, SI_final=3, SV_init=0.3,
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     from NiaPy.algorithms.basic import ParticleSwarmAlgorithm
 
     for i in range(nruns):
-        task = StoppingTask(D=dim, nGEN=50, optType=OptimizationType.MINIMIZATION,
+        task = StoppingTask(D=dim, nGEN=iter, nFES=fes, optType=OptimizationType.MINIMIZATION,
                             benchmark=noisy_rosenbrock())
 
         algo = ParticleSwarmAlgorithm(NP=30, C1=2.0, C2=2.0, w=0.8, vMin=-1, vMax=1)
@@ -138,7 +138,7 @@ if __name__ == "__main__":
     x, y = np.meshgrid(x, y)
     plt.contourf(x, y, noisy_rosenbrock.function(benc)(dim, (x, y)))
 
-    plt.scatter(x_spo, y_spo, label="SPO")
+    plt.scatter(x_spo, y_spo, label="PSO")
     plt.scatter(x_fss, y_fss, label="FSS")
     plt.scatter(x_sgd, y_sgd, label="SGD")
 
