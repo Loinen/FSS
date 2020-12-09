@@ -8,6 +8,7 @@ from NiaPy.task import StoppingTask, OptimizationType
 from NiaPy.benchmarks import Benchmark
 from scipy.optimize import OptimizeResult
 from scipy.optimize import rosen, minimize
+from scipy.interpolate import Rbf
 
 class noisy_rosenbrock(Benchmark):
     def __init__(self):
@@ -15,9 +16,7 @@ class noisy_rosenbrock(Benchmark):
 
     def function(self):
         def evaluate(D, sol):
-            val = rosen(sol)
-            val += 10 * np.random.uniform()
-            return val
+            return rbf(*sol)
         return evaluate
 
 
@@ -57,9 +56,14 @@ if __name__ == "__main__":
     nruns = 10
     dim = 2
 
+    x = np.linspace(-3, 3, 20)
+    x, y = np.meshgrid(x, x)
+    noise = np.random.uniform(size=(np.shape(x)))
+    u = rosen((x, y)) + noise
+    rbf = Rbf(x, y, u)
+
     benc = noisy_rosenbrock()
     benc.plot3d()
-
 
     Time = list()
     x_fss = list()
