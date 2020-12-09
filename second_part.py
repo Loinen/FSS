@@ -7,7 +7,7 @@ from NiaPy.algorithms.basic import FishSchoolSearch
 from NiaPy.task import StoppingTask, OptimizationType
 from NiaPy.benchmarks import Benchmark
 from scipy.optimize import OptimizeResult
-from scipy.optimize import rosen_der, minimize
+from scipy.optimize import rosen, minimize
 
 class noisy_rosenbrock(Benchmark):
     def __init__(self):
@@ -15,8 +15,8 @@ class noisy_rosenbrock(Benchmark):
 
     def function(self):
         def evaluate(D, sol):
-            val = sum(100.0*np.power(sol[1:] - np.power(sol[:-1], 2.0), 2.0) + (1 - np.power(sol[:-1], 2.0)))
-            val += 10 ** 3 * np.random.uniform()
+            val = rosen(sol)
+            val += 10 * np.random.uniform()
             return val
         return evaluate
 
@@ -37,16 +37,17 @@ def sgd(
     velocity = np.zeros_like(x)
 
     for i in range(startiter, startiter + maxiter):
-        g = jac(x)
 
         if callback and callback(x):
             break
 
+        g = np.gradient((fun(benc)(len(x), x), fun(benc)(len(x), x+0.01)), 0.01)
+
         velocity = mass * velocity - (1.0 - mass) * g
-        x = x + learning_rate * velocity
+        x1 = x + learning_rate * velocity
 
     i += 1
-    return OptimizeResult(x=x, fun=fun(benc)(len(x), x), jac=g, nit=i, nfev=i, success=True)
+    return OptimizeResult(x=x1, fun=fun(benc)(len(x), x), jac=g, nit=i, nfev=i, success=True)
 
 
 if __name__ == "__main__":
@@ -89,7 +90,7 @@ if __name__ == "__main__":
     for i in range(nruns):
         x0 = np.random.uniform(size=dim)
         timer = time.perf_counter()
-        res_sgd = minimize(noisy_rosenbrock.function, x0, method=sgd, jac=rosen_der)
+        res_sgd = minimize(noisy_rosenbrock.function, x0, method=sgd, jac=None)
         Time.append(time.perf_counter() - timer)
 
         stats[i] = res_sgd.fun
