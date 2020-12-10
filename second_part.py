@@ -59,13 +59,15 @@ def sgd(
 if __name__ == "__main__":
     nruns = 30
     dim = 2
+    iter = 1000
+    fes = 1000
+
     x = np.linspace(-3, 3, 20)
     x, y = np.meshgrid(x, x)
     noise = np.random.uniform(size=(np.shape(x)))
     u = rosen((x, y)) + noise
     rbf = Rbf(x, y, u)
-    iter = 1000
-    fes = 1000
+
     benc = noisy_rosenbrock()
     benc.plot3d()
 
@@ -88,6 +90,7 @@ if __name__ == "__main__":
         stats[i] = best[1]
         x_fss.append(best[0][0])
         y_fss.append(best[0][1])
+
     task.plot()
     stat = BasicStatistics(stats)
     print(stat.generate_standard_report())
@@ -136,7 +139,6 @@ if __name__ == "__main__":
         stats[i] = best[1]
         x_spo.append(best[0][0])
         y_spo.append(best[0][1])
-        evals, x_f = task.return_conv()
 
     task.plot()
     stat = BasicStatistics(stats)
