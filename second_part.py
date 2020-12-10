@@ -35,6 +35,8 @@ def sgd(
 ):
     x = x0
     velocity = np.zeros_like(x)
+    fev = list()
+    x_list = list()
 
     for i in range(startiter, startiter + maxiter):
 
@@ -48,9 +50,10 @@ def sgd(
 
         velocity = mass * velocity - (1.0 - mass) * g
         x1 = x + learning_rate * velocity
-
+        fev.append(i)
+        x_list.append(fun(benc)(len(x1), x1))
     i += 1
-    return OptimizeResult(x=x1, fun=fun(benc)(len(x), x), jac=g, nit=i, nfev=i, success=True)
+    return OptimizeResult(x=x1, fun=fun(benc)(len(x), x), jac=g, nit=i, nfev=fev, xlist=x_list, success=True)
 
 
 if __name__ == "__main__":
@@ -85,7 +88,7 @@ if __name__ == "__main__":
         stats[i] = best[1]
         x_fss.append(best[0][0])
         y_fss.append(best[0][1])
-
+    task.plot()
     stat = BasicStatistics(stats)
     print(stat.generate_standard_report())
     print("Execution time ", np.mean(Time))
@@ -104,6 +107,12 @@ if __name__ == "__main__":
         stats[i] = res_sgd.fun
         x_sgd.append(res_sgd.x[0])
         y_sgd.append(res_sgd.x[1])
+
+    sgd_ev = res_sgd.nfev
+    sgd_x = res_sgd.xlist
+    plt.title("SGD")  # заголовок
+    plt.plot(sgd_ev, sgd_x)
+    plt.show()
 
     stat = BasicStatistics(stats)
     print(stat.generate_standard_report())
@@ -127,7 +136,9 @@ if __name__ == "__main__":
         stats[i] = best[1]
         x_spo.append(best[0][0])
         y_spo.append(best[0][1])
+        evals, x_f = task.return_conv()
 
+    task.plot()
     stat = BasicStatistics(stats)
     print(stat.generate_standard_report())
     print("Execution time ", np.mean(Time))
