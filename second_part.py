@@ -4,6 +4,7 @@ import time
 
 from NiaPy.algorithms import BasicStatistics
 from NiaPy.algorithms.basic import FishSchoolSearch
+from NiaPy.algorithms.basic import ParticleSwarmAlgorithm
 from NiaPy.task import StoppingTask, OptimizationType
 from NiaPy.benchmarks import Benchmark
 from scipy.optimize import OptimizeResult
@@ -74,8 +75,8 @@ if __name__ == "__main__":
         task = StoppingTask(D=dim, nGEN=iter, nFES=fes,  optType=OptimizationType.MINIMIZATION,
                             benchmark=noisy_rosenbrock())
 
-        algo = FishSchoolSearch(NP=30, SI_init=0.5, SI_final=3, SV_init=0.3,
-                                SV_final=7, min_w=0.1, w_scale=0.7)
+        algo = FishSchoolSearch(NP=30, SI_init=0.1, SI_final=2, SV_init=0.1,
+                                SV_final=2, min_w=0.1, w_scale=0.7)
 
         timer = time.perf_counter()
         best = algo.run(task)
@@ -113,13 +114,11 @@ if __name__ == "__main__":
     y_spo = list()
     stats = np.zeros(nruns)
     print("\nParticleSwarmAlgorithm")
-    from NiaPy.algorithms.basic import ParticleSwarmAlgorithm
-
     for i in range(nruns):
         task = StoppingTask(D=dim, nGEN=iter, nFES=fes, optType=OptimizationType.MINIMIZATION,
                             benchmark=noisy_rosenbrock())
 
-        algo = ParticleSwarmAlgorithm(NP=30, C1=2.0, C2=2.0, w=0.8, vMin=-1, vMax=1)
+        algo = ParticleSwarmAlgorithm(NP=30, C1=1, C2=1, w=0.5, vMin=-1, vMax=0.5)
 
         timer = time.perf_counter()
         best = algo.run(task)
